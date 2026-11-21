@@ -61,7 +61,7 @@ func (c *SessionCache) Export(w io.Writer) error {
 
 // ExportToFile writes a SessionCache to disk.
 func (c *SessionCache) ExportToFile(filename string) error {
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}

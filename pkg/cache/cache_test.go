@@ -2,6 +2,9 @@ package cache
 
 import (
 	"bytes"
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -71,6 +74,32 @@ func TestImportExport(t *testing.T) {
 		t.Fatal(err)
 	}
 	verifyCache(t, cc, []int{0, 1, 2, 3, 4})
+}
+
+func TestExportToFileTruncates(t *testing.T) {
+	filename := filepath.Join(t.TempDir(), "cache.json")
+	c := generateTestCache(t, 5)
+	if err := c.ExportToFile(filename); err != nil {
+		t.Fatal(err)
+	}
+	c.Vehicles = make(map[string][]dispatcher.CacheEntry)
+	if err := c.ExportToFile(filename); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expected bytes.Buffer
+	if err := c.Export(&expected); err != nil {
+		t.Fatal(err)
+	}
+	if !json.Valid(data) {
+		t.Error("exported file is not valid JSON")
+	}
+	if !bytes.Equal(data, expected.Bytes()) {
+		t.Errorf("exported file = %q, want %q", data, expected.Bytes())
+	}
 }
 
 func TestEviction(t *testing.T) {
